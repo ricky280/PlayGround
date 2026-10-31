@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#07080a" />
+  <meta name="description" content="Blutnacht — a round-based first-person zombie survival game." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2307080a'/%3E%3Cpath d='M32 8 56 52H8Z' fill='%23a11919'/%3E%3Ccircle cx='32' cy='34' r='7' fill='%23ded6c4'/%3E%3C/svg%3E" />
+  <title>BLUTNACHT — Survive the Horde</title>
+  <link rel="preload" href="./fonts/oswald.woff2" as="font" type="font/woff2" crossorigin />
+  <script type="module" crossorigin src="./assets/index-CLlzflpy.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BLxe2JrU.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="game" aria-label="Game view"></canvas>
+
+    <div id="fx-vignette" class="fx"></div>
+    <div id="fx-grain" class="fx"></div>
+    <div id="fx-scan" class="fx"></div>
+    <div id="damage-vignette"></div>
+    <div id="flash"></div>
+
+    <!-- ================= HUD ================= -->
+    <div id="hud" class="hidden">
+      <div id="round-block">
+        <div class="round-rule"></div>
+        <div class="round-label">ROUND</div>
+        <div class="round-number" id="round-number">1</div>
+        <div class="round-tally" id="round-tally"></div>
+      </div>
+
+      <div id="points-block">
+        <div class="points-icon">&#10022;</div>
+        <div class="points-value" id="points">500</div>
+      </div>
+
+      <div id="weapon-block">
+        <div id="weapon-name">M1911</div>
+        <div class="ammo-line">
+          <span id="ammo-mag">8</span><span class="ammo-slash">/</span><span id="ammo-reserve">80</span>
+        </div>
+        <div id="weapon-slots">
+          <span class="slot" data-slot="0">1</span>
+          <span class="slot" data-slot="1">2</span>
+        </div>
+      </div>
+
+      <div id="health-block">
+        <div id="health-bar"><div id="health-fill"></div></div>
+        <div id="health-label">VITALS</div>
+      </div>
+
+      <div id="crosshair">
+        <i class="ch ch-t"></i><i class="ch ch-b"></i><i class="ch ch-l"></i><i class="ch ch-r"></i>
+        <i class="ch-dot"></i>
+        <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+      </div>
+
+      <div id="prompt" class="hidden">
+        <span class="prompt-key">F</span>
+        <span class="prompt-text"></span>
+        <span class="prompt-price"></span>
+      </div>
+
+      <div id="banner">
+        <div class="banner-kicker" id="banner-kicker">SURVIVE</div>
+        <div class="banner-title" id="banner-title">ROUND 1</div>
+        <div class="banner-sub" id="banner-sub">THEY ARE COMING</div>
+      </div>
+
+      <div id="powerup-hud" class="hidden">
+        <div class="pu-icon" id="pu-icon">&#9760;</div>
+        <div class="pu-copy">
+          <div class="pu-name" id="pu-name">INSTA-KILL</div>
+          <div class="pu-timer"><div class="pu-timer-fill" id="pu-timer-fill"></div></div>
+        </div>
+      </div>
+
+      <div id="objective">
+        <span class="obj-dot"></span>
+        <span id="objective-text">SURVIVE THE HORDE</span>
+        <span id="objective-count"></span>
+      </div>
+
+      <div id="toast-stack"></div>
+
+      <div id="hint-bar">
+        <span><b>WASD</b> MOVE</span><span><b>SHIFT</b> SPRINT</span><span><b>R</b> RELOAD</span><span><b>F</b> USE</span><span><b>Q</b> SWAP</span>
+      </div>
+    </div>
+
+    <!-- ================= TOUCH CONTROLS ================= -->
+    <div id="touch" class="hidden">
+      <div id="look-zone"></div>
+      <button id="btn-pause" class="tbtn small" aria-label="Pause game">II</button>
+      <div id="stick-base"><div id="stick-knob"></div></div>
+      <div id="touch-buttons">
+        <button id="btn-ads" class="tbtn small">ADS</button>
+        <button id="btn-reload" class="tbtn small">R</button>
+        <button id="btn-use" class="tbtn small">USE</button>
+        <button id="btn-swap" class="tbtn small">SWAP</button>
+        <button id="btn-fire" class="tbtn fire"><span>FIRE</span></button>
+      </div>
+    </div>
+
+    <!-- ================= MENU ================= -->
+    <div id="menu" class="screen">
+      <div class="menu-grain"></div>
+      <div class="menu-inner">
+        <div class="menu-kicker">A ROUND-BASED SURVIVAL HORROR</div>
+        <h1 class="menu-title" data-text="BLUTNACHT">BLUTNACHT</h1>
+        <div class="menu-rule"><span></span><i>&#10022;</i><span></span></div>
+        <p class="menu-sub">The dead have risen. Hold the bunker. There is no extraction.</p>
+        <button id="deploy" class="menu-button">
+          <span class="btn-noise"></span>
+          <span class="btn-label">DEPLOY</span>
+          <span class="btn-sub">ENTER THE BUNKER</span>
+        </button>
+        <div class="menu-controls">
+          <div class="ctrl"><b>WASD</b><span>MOVE</span></div>
+          <div class="ctrl"><b>MOUSE</b><span>AIM / FIRE</span></div>
+          <div class="ctrl"><b>SHIFT</b><span>SPRINT</span></div>
+          <div class="ctrl"><b>R</b><span>RELOAD</span></div>
+          <div class="ctrl"><b>F</b><span>BUY / REPAIR</span></div>
+          <div class="ctrl"><b>Q</b><span>SWAP WEAPON</span></div>
+        </div>
+        <div class="menu-foot">
+          <span>HEADSHOTS PAY DOUBLE</span><span class="dot">&bull;</span>
+          <span>REBUILD THE BARRICADES</span><span class="dot">&bull;</span>
+          <span>THEY GET STRONGER EVERY ROUND</span>
+        </div>
+      </div>
+      <div class="menu-vignette"></div>
+      <div class="menu-corner tl"></div><div class="menu-corner tr"></div>
+      <div class="menu-corner bl"></div><div class="menu-corner br"></div>
+    </div>
+
+    <!-- ================= PAUSE ================= -->
+    <div id="pause" class="screen hidden">
+      <div class="panel">
+        <div class="panel-kicker">FIELD PAUSED</div>
+        <h2>HOLD THE LINE</h2>
+        <p>Take a breath. They will not.</p>
+        <button id="resume" class="menu-button compact"><span class="btn-label">RESUME</span></button>
+        <div class="settings-row">
+          <label for="sens">LOOK SENSITIVITY</label>
+          <input id="sens" type="range" min="0.4" max="2.4" step="0.05" value="1" />
+          <output id="sens-out">1.00</output>
+        </div>
+        <button id="quit" class="link-button">ABANDON RUN</button>
+      </div>
+    </div>
+
+    <!-- ================= GAME OVER ================= -->
+    <div id="gameover" class="screen hidden">
+      <div class="go-bg"></div>
+      <div class="go-inner">
+        <div class="go-kicker">THE HORDE PREVAILS</div>
+        <h2 class="go-title">YOU DIED</h2>
+        <div class="go-rule"></div>
+        <div class="go-stats">
+          <div class="stat big"><span class="stat-value" id="go-round">1</span><span class="stat-label">ROUNDS SURVIVED</span></div>
+          <div class="stat"><span class="stat-value" id="go-kills">0</span><span class="stat-label">KILLS</span></div>
+          <div class="stat"><span class="stat-value" id="go-headshots">0</span><span class="stat-label">HEADSHOTS</span></div>
+          <div class="stat"><span class="stat-value" id="go-points">0</span><span class="stat-label">POINTS</span></div>
+        </div>
+        <button id="retry" class="menu-button"><span class="btn-label">TRY AGAIN</span><span class="btn-sub">THEY REMEMBER YOU</span></button>
+        <button id="menu-return" class="link-button">RETURN TO MENU</button>
+      </div>
+    </div>
+
+    <div id="loading" class="screen">
+      <div class="load-inner">
+        <div class="load-mark">&#10022;</div>
+        <div class="load-title">BLUTNACHT</div>
+        <div class="load-bar"><div id="load-fill"></div></div>
+        <div class="load-text" id="load-text">DESCENDING INTO THE BUNKER</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
