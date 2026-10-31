@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b14" />
+  <meta name="description" content="Blade Chain — a fruit-slicing arcade game where every slice links a combo chain and the sword starts hunting fruit for you." />
+  <title>Blade Chain — Fruit Ninja, Re-Chained</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070b14'/%3E%3Cpath d='M14 46 46 14' stroke='%23ffcf5c' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='46' cy='46' r='12' fill='%23ff4d5e'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-state="menu">
+  <main id="app">
+    <canvas id="game" aria-label="Blade Chain game field"></canvas>
+
+    <div id="hud" aria-hidden="false">
+      <div class="hud-top">
+        <div class="score-block">
+          <span class="label">SCORE</span>
+          <span id="score" class="score-value">0</span>
+          <span class="best-line">BEST <b id="hudBest">0</b></span>
+        </div>
+
+        <div class="hud-actions">
+          <button id="muteBtn" class="icon-btn" type="button" aria-label="Toggle sound" title="Sound (M)">
+            <svg class="icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="m16 9 5 6m0-6-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <button id="pauseBtn" class="icon-btn" type="button" aria-label="Pause" title="Pause (Esc)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
+          </button>
+        </div>
+
+        <div class="lives-block">
+          <span class="label">STRIKES</span>
+          <div id="lives" class="lives" aria-label="Three strikes remaining">
+            <span class="strike"></span><span class="strike"></span><span class="strike"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chain-block" id="chainBlock">
+        <div class="chain-row">
+          <span class="chain-name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg> CHAIN</span>
+          <span id="chainCount" class="chain-count">0</span>
+          <span id="chainMult" class="chain-mult">&times;1</span>
+        </div>
+        <div class="chain-track"><div id="chainFill" class="chain-fill"></div></div>
+        <div class="chain-hint" id="chainHint">4 LINKS &rarr; LIGHTNING ARC</div>
+      </div>
+    </div>
+
+    <section id="menu" class="screen">
+      <div class="panel menu-panel">
+        <p class="eyebrow">FRUIT NINJA &middot; RE-CHAINED</p>
+        <h1 class="logo"><span class="logo-blade">BLADE</span><span class="logo-chain">CHAIN</span></h1>
+        <p class="tagline">Slice fruit. Link the chain.<br /><em>Then let the sword hunt for you.</em></p>
+
+        <button id="playBtn" class="btn btn-primary" type="button">
+          <span>PLAY</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5z" fill="currentColor"/></svg>
+        </button>
+
+        <div class="how">
+          <div class="how-item">
+            <span class="how-ico">&#10005;</span>
+            <p><b>Swipe to slice</b><small>Mouse, pen, or touch. Fast strokes cut clean.</small></p>
+          </div>
+          <div class="how-item">
+            <span class="how-ico">&#9889;</span>
+            <p><b>Keep the chain alive</b><small>Every slice feeds the meter &mdash; it drains fast.</small></p>
+          </div>
+          <div class="how-item">
+            <span class="how-ico">&#8635;</span>
+            <p><b>Every 4 links arc</b><small>The blade leaps to the nearest fruit and slices it.</small></p>
+          </div>
+          <div class="how-item">
+            <span class="how-ico how-bomb">&#9760;</span>
+            <p><b>Bombs cost a strike</b><small>Missed fruit does too. Three strikes ends the run.</small></p>
+          </div>
+        </div>
+
+        <p class="menu-foot">BEST <b id="menuBest">0</b> <span class="dot">&middot;</span> <button id="soundLink" class="link-btn" type="button">SOUND ON</button></p>
+      </div>
+    </section>
+
+    <section id="pause" class="screen" hidden>
+      <div class="panel compact-panel">
+        <p class="eyebrow">TAKE A BREATH</p>
+        <h2 class="panel-title">PAUSED</h2>
+        <div class="btn-row">
+          <button id="resumeBtn" class="btn btn-primary" type="button">RESUME</button>
+          <button id="restartBtn" class="btn btn-ghost" type="button">RESTART</button>
+        </div>
+        <button id="quitBtn" class="link-btn" type="button">QUIT TO MENU</button>
+      </div>
+    </section>
+
+    <section id="over" class="screen" hidden>
+      <div class="panel over-panel">
+        <p class="eyebrow">RUN COMPLETE</p>
+        <h2 class="panel-title">GAME <span class="accent-red">OVER</span></h2>
+
+        <div class="final-score"><span id="finalScore">0</span><small>POINTS</small></div>
+        <div id="newBest" class="new-best" hidden>&#9733; NEW BEST &#9733;</div>
+
+        <div class="stats">
+          <div class="stat"><b id="statSliced">0</b><small>FRUIT SLICED</small></div>
+          <div class="stat"><b id="statChain">0</b><small>MAX CHAIN</small></div>
+          <div class="stat"><b id="statBest">0</b><small>BEST</small></div>
+        </div>
+
+        <div class="btn-row">
+          <button id="againBtn" class="btn btn-primary" type="button">PLAY AGAIN</button>
+          <button id="overMenuBtn" class="btn btn-ghost" type="button">MENU</button>
+        </div>
+        <p class="hint-line">Press <kbd>SPACE</kbd> to run it back</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
